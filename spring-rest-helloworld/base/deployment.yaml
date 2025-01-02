@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-rest-helloworld
+  labels:
+#    pipelinesascode.tekton.dev/on-event: pull_request
+#    pipelinesascode.tekton.dev/on-target-branch: devteam
+#    repo_name: spring-rest-helloworld
+    app: spring-rest-helloworld
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spring-rest-helloworld
+  template:
+    metadata:
+      labels:
+        app: spring-rest-helloworld
+    spec:
+      containers:
+        - name: spring-rest-helloworld
+          image: ghcr.io/yewintaung/spring-rest-helloworld:1.0.0-6-89daad6
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /spring-hello/actuator/health/readiness
+              port: 8082
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          livenessProbe:
+            httpGet:
+              path: /spring-hello/actuator/health/liveness
+              port: 8082
+              scheme: HTTP
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          envFrom:
+            - configMapRef:
+                name: spring-rest-helloworld
+          resources:
+            requests:
+              memory: 1024Mi
+          volumeMounts:
+            - name: spring-rest-helloworld-config-volume
+              readOnly: true
+              mountPath: "/opt/mutu/config/application_config_override.yaml"
+              subPath: application_config_override.yaml
+            - name: spring-rest-helloworld-secret-config-volume
+              readOnly: true
+              mountPath: "/opt/mutu/config/application_secret_override.yaml"
+              subPath: application_secret_override.yaml
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      volumes:
+        - name: spring-rest-helloworld-secret-config-volume
+          secret:
+            secretName: spring-rest-helloworld
+        - name: spring-rest-helloworld-config-volume
+          configMap:
+            name: spring-rest-helloworld
+            items:
+              - key: application_config_override.yaml
+                path: application_config_override.yaml

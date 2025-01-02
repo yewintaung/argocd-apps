@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+namePrefix: uat-
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: spring-rest-helloworld
+    files:
+      - application_config_override.yaml
+    literals:
+      - MAX_JVM_MEMORY=256
+      - MIN_JVM_MEMORY=256
+secretGenerator:
+  - name: spring-rest-helloworld
+    files:
+      - application_secret_override.yaml
+images:
+  - name: ghcr.io/yewintaung/spring-rest-helloworld
+    newName: ghcr.io/yewintaung/spring-rest-helloworld
+    newTag: 1.0.0-7-e10aa02
