@@ -19,4 +19,4 @@ secretGenerator:
 images:
   - name: ghcr.io/yewintaung/spring-rest-helloworld
     newName: ghcr.io/yewintaung/spring-rest-helloworld
-    newTag: 1.0.0-7-e10aa02
+    newTag: 1.0.0-13-340aacd
